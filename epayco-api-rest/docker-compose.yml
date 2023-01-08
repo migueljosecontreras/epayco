@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  php_apache:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    #user: ${UID}:${GID}
+    volumes:
+      - ./:/var/www/api
+      - /var/www/api/vendor
+      - ./storage/php-config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+      - ./storage/php-config/laravel-worker.conf:/etc/supervisor/conf.d/laravel-worker.conf
+    ports:
+      - ${LUMEN_PORT}:8085
+    networks:
+      - default
+      - epayco-database-net
+networks:
+  epayco-database-net:
+    external: true

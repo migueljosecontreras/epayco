@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  php_apache:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    # command: "php -S 0.0.0.0:8080 -t ./public"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/var/www/api
+      - /var/www/api/vendor
+      - ./storage/php-config/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    ports:
+      - ${LUMEN_PORT}:8080
+networks:
+  epayco-database-net:
+    external: false

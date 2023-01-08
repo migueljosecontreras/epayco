@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  epayco_database_mysql:
+    image: mysql:8.0.3
+    container_name: 'epayco_database_mysql'
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    restart: unless-stopped
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    ports:
+      - '3308:3306'
+    networks:
+      - epayco-database-net
+  epayco_database_mongodb:
+    image: mongo:4.4
+    container_name: 'epayco_database_mongodb'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_MONGO_PASSWORD}
+    volumes:
+      - ./mongo-data:/data/db
+    ports:
+      - "27018:27017"
+    networks:
+      - epayco-database-net
+
+networks:
+  epayco-database-net:
+    name: epayco-database-net
+    external: false

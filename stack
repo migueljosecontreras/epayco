@@ -1,0 +1,148 @@
+#!/bin/sh#!/bin/bash
+
+input=$1
+
+#
+function _version(){
+	app_name="Automatic Deployment Stack"
+	app_author_bash="Miguel Contreras"
+	app_version=1.0.0
+	app_company="Epayco"
+	echo
+	echo ' Bash:              '$app_name
+	echo ' Author Bash:       '$app_author_bash
+	echo ' Version:           '$app_version
+	echo ' Company            '$app_company
+	echo
+}
+
+#
+function _help(){
+	echo
+	echo 'Usage: sudo bash stack COMMAND'
+	echo
+	echo "Victorious warriors first win and then go to war."
+	echo 'Stack is a bash used to automate part of the deployment'
+	echo 'of the local environment of the developers of the micompu project'
+	echo
+	echo 'Commands:'
+	echo
+	echo '  up                 Start all stack settings for upper'
+	echo '  stop               Stop all stack settings for upper'
+	echo '  -v, --version      Show the all stack version information'
+	echo '  --help             Show the all stack help information'
+	echo
+}
+
+#
+function _invalid_command (){
+	echo
+	echo 'stack:' "'$input'" 'is not a stack command'
+	echo  See "'sudo bash stack --help'"
+	echo
+	exit 1
+}
+
+function _stop_image(){
+	cd $1
+	docker-compose stop
+	cd ..
+}
+
+function _stop_docker_images(){
+    for d in */ ; do
+        if [ -d "$d" -a "$d" != "base/" ]; then
+            if [ -f "$d/docker-compose.yml" ]; then
+            	_stop_image "$d"
+            fi
+        fi
+    done
+}
+
+function _init(){
+	if [ "$1" = "" ]
+		then
+			_help
+	elif [ $1 == 'up' ]
+		then
+			echo
+			echo "Going back to the stack by the legions of the Epayco Warriors"
+
+
+            cd database
+            docker-compose up -d
+	        cd ..
+
+			sleep 5
+
+            cd epayco-api-rest
+            make init
+	        cd ..
+
+			sleep 5
+
+            cd gateway
+            make init
+	        cd ..
+
+			sleep 5
+
+		
+			printf "\rProcessing the containers for the waiting ... \e[32mdone\e[0m\n" >&2
+
+			echo
+			echo "The following routes now resolve locally and not online (Internet)"
+			echo "To see in the browser combine (CRTL + Click) on the url to open:"
+			echo
+	 		echo "Applications:"
+
+            for d in */ ; do
+                if [ -d "$d" -a "$d" != "base/" -a "$d" != "database/" ]; then
+                    if [ -f "$d/docker-compose.yml" ]; then
+	 		            printf "\e[95m[$d %s\t]\e[0m:  http://localhost:`sed -n 's/LUMEN_PORT=//p' ./$d/.env`\n" >&2
+                    fi
+                fi
+            done
+
+	 		echo
+	 		echo "Databases:"
+	 		echo -e "\e[95m[Mongo Logs DB Server   ]\e[0m:  epayco_database_mongodb" >&2
+	 		echo -e "\e[95m[Mysql DB Server        ]\e[0m:  epayco_database_mysql" >&2
+			echo
+			echo "Going back to the stack by the legions of the Epayco Warriors completed"
+			echo
+	elif [ $1 == 'stop' ]
+		then
+			echo
+			echo "Death to the stack by the legions of the Epayco Warriors"
+			echo
+			_stop_docker_images
+			sleep 0.2
+			echo
+			echo "Death to the stack by the legions of the Epayco Warriors completed"
+			echo
+	elif [ $1 == '-v' ] || [ $1 == '--version' ]
+		then
+			_version
+	elif [ $1 == '--help' ]
+		then
+			_help
+	else
+		_invalid_command
+	fi
+}
+
+#
+function _verify_connection(){
+	  _init $input
+}
+
+echo "  ______                             "
+echo " |  ____|                            "
+echo " | |__   _ __   __ _ _   _  ___ ___  "
+echo " |  __| | '_ \ /  \` | | | |/ _ / _ \ "
+echo " | |____| |_) | (_| | |_| | (_| (_) |"
+echo " |______| .__/ \__,_|\__, |\___\___/ "
+echo "        | |           __/ |          "
+echo "        |_|          |___/          "
+_verify_connection

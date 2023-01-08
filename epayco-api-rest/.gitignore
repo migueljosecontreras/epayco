@@ -1,0 +1,11 @@
+/vendor
+/storage/*
+/storage/api-docs
+storage/api-docs
+!storage/imports
+/.idea
+Homestead.json
+Homestead.yaml
+.env
+.phpunit.result.cache
+/public/export
